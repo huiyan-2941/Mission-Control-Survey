@@ -18,9 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject token into HTML
+      - name: Inject tokens into HTML
         run: |
-          sed -i "s|__SURVEY_TOKEN__|${{ secrets.SURVEY_TOKEN }}|g" index.html admin.html
+          # index.html uses Actions token (only triggers workflow_dispatch)
+          sed -i "s|__SURVEY_TOKEN__|${{ secrets.ACTIONS_TOKEN }}|g" index.html
+          # admin.html uses Issues token (reads issues)
+          sed -i "s|__SURVEY_TOKEN__|${{ secrets.ISSUES_TOKEN }}|g" admin.html
 
       - uses: actions/configure-pages@v4
         with:

@@ -277,37 +277,16 @@
   }
 
   async function submitToGitHub(data) {
-    const lines = [
-      `| Field | Response |`,
-      `|-------|----------|`,
-      `| **Submitted** | ${new Date(data.timestamp).toLocaleString('en-GB')} |`,
-      `| **Email** | ${data.email} |`,
-      `| **Role** | ${data.role} |`,
-      `| **Market Unit / LoB** | ${data.market_unit} |`,
-      `| **Attending Mission Control** | ${data.attending} |`,
-      data.reason_not_attending ? `| **If No, Why** | ${data.reason_not_attending} |` : '',
-      `| **Insights Quality** | ${data.insights_quality} |`,
-      `| **Valuable Topics** | ${data.valuable_topics} |`,
-      data.missing_kpi ? `| **Missing KPI** | ${data.missing_kpi} |` : '',
-      `| **Follow Up Actions** | ${data.follow_up_actions} |`,
-      data.benefits ? `| **Benefits** | ${data.benefits} |` : '',
-      data.comments ? `| **Comments** | ${data.comments} |` : '',
-      `| **Rating** | ${data.rating} / 10 |`,
-    ].filter(Boolean).join('\n');
-
-    const body = `${lines}\n\n<details><summary>Raw JSON</summary>\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\`\n</details>`;
-
-    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues`, {
-      method: 'POST',
-      headers: { 'Authorization': `token ${GH_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: `[Survey] ${data.email} · ${data.market_unit} · ${new Date(data.timestamp).toLocaleDateString('en-GB')}`,
-        body,
-        labels: ['survey-response'],
-      }),
-    });
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_REPO}/actions/workflows/receive-survey.yml/dispatches`,
+      {
+        method: 'POST',
+        headers: { 'Authorization': `token ${GH_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: 'main', inputs: { payload: JSON.stringify(data) } }),
+      }
+    );
     if (!res.ok) {
-      const e = await res.json();
+      const e = await res.json().catch(() => ({}));
       throw new Error(e.message || res.status);
     }
   }

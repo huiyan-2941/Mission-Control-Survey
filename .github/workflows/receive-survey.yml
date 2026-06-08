@@ -1,0 +1,53 @@
+name: Receive Survey Response
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: 'Survey response JSON'
+        required: true
+        type: string
+
+permissions:
+  issues: write
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ISSUES_TOKEN }}
+          script: |
+            const data = JSON.parse(${{ toJSON(github.event.inputs.payload) }});
+            const ts = new Date(data.timestamp).toLocaleString('en-GB');
+
+            const rows = [
+              ['Submitted', ts],
+              ['Email', data.email],
+              ['Role', data.role],
+              ['Market Unit / LoB', data.market_unit],
+              ['Attending Mission Control', data.attending],
+              data.reason_not_attending && ['If No, Why', data.reason_not_attending],
+              ['Insights Quality', data.insights_quality],
+              ['Valuable Topics', data.valuable_topics],
+              data.missing_kpi && ['Missing KPI', data.missing_kpi],
+              ['Follow Up Actions', data.follow_up_actions],
+              data.benefits && ['Benefits', data.benefits],
+              data.comments && ['Comments', data.comments],
+              ['Rating', `${data.rating} / 10`],
+            ].filter(Boolean);
+
+            const table = '| Field | Response |\n|-------|----------|\n' +
+              rows.map(([k,v]) => `| **${k}** | ${v} |`).join('\n');
+
+            const body = `${table}\n\n<details><summary>Raw JSON</summary>\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\`\n</details>`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Survey] ${data.email} · ${data.market_unit} · ${ts.split(',')[0]}`,
+              body,
+              labels: ['survey-response'],
+            });
