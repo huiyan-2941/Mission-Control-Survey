@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLSM Mission Control Survey</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f5f6fa; color: #32363a; min-height: 100vh; }
+
+    header {
+      background: #0070f2; color: #fff;
+      padding: 20px 32px; display: flex; align-items: center; gap: 16px;
+    }
+    header .logo { font-size: 24px; font-weight: 700; }
+    header .title { font-size: 18px; font-weight: 600; }
+    header .sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+    .container { max-width: 760px; margin: 40px auto; padding: 0 16px 60px; }
+
+    .card {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 28px 32px; margin-bottom: 16px;
+    }
+    .card h2 { font-size: 20px; color: #0070f2; margin-bottom: 6px; }
+    .card .desc { font-size: 13px; color: #6a6d70; line-height: 1.6; }
+
+    .progress-bar { height: 4px; background: #e0e0e0; border-radius: 2px; margin-bottom: 24px; }
+    .progress-bar .fill { height: 100%; background: #0070f2; border-radius: 2px; transition: width 0.3s; }
+
+    .q-label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 10px; line-height: 1.5; }
+    .q-label .req { color: #bb0000; }
+    .q-hint { font-weight: 400; font-size: 12px; color: #6a6d70; }
+
+    input[type="text"], input[type="email"], textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #c0c2c5;
+      border-radius: 4px; font-size: 14px; color: #32363a; outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus { border-color: #0070f2; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+    .radio-group label, .checkbox-group label {
+      display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;
+    }
+
+    .scale-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .scale-row label { cursor: pointer; }
+    .scale-row input[type="radio"] { display: none; }
+    .scale-btn {
+      display: block; padding: 7px 14px; border-radius: 4px;
+      border: 1.5px solid #c0c2c5; font-size: 13px; font-weight: 500;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .scale-row input:checked + .scale-btn { background: #0070f2; border-color: #0070f2; color: #fff; }
+
+    .rating-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rating-row label { cursor: pointer; }
+    .rating-row input[type="radio"] { display: none; }
+    .rating-btn {
+      width: 42px; height: 42px; border-radius: 50%; border: 2px solid #c0c2c5;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; transition: all 0.15s;
+    }
+    .rating-row input:checked + .rating-btn { background: #0070f2; border-color: #0070f2; color: #fff; }
+
+    .error-msg { color: #bb0000; font-size: 12px; margin-top: 5px; display: none; }
+    .hidden { display: none !important; }
+
+    .submit-btn {
+      width: 100%; padding: 13px; background: #0070f2; color: #fff;
+      border: none; border-radius: 4px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .submit-btn:hover { background: #0057c2; }
+    .submit-btn:disabled { background: #a0b8d8; cursor: not-allowed; }
+
+    .success-card { text-align: center; padding: 48px 20px; }
+    .success-card .icon { font-size: 52px; margin-bottom: 16px; }
+    .success-card h2 { font-size: 22px; color: #107e3e; margin-bottom: 8px; }
+    .success-card p { color: #6a6d70; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SAP</div>
+  <div>
+    <div class="title">FLSM Mission Control Survey</div>
+    <div class="sub">Revenue Operations · Your feedback helps us improve</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <div class="progress-bar"><div class="fill" id="progress-fill" style="width:0%"></div></div>
+    <h2>FLSM Mission Control — Feedback Survey</h2>
+    <p class="desc">This survey evaluates and helps improve the FLSM Mission Control program — the regular 1:1 meeting between FLSMs and their Revenue Operations Business Partners.</p>
+  </div>
+
+  <form id="survey-form">
+
+    <div class="card">
+      <label class="q-label">1. Your SAP Email Address <span class="req">*</span></label>
+      <input type="email" name="email" placeholder="firstname.lastname@sap.com" required />
+      <div class="error-msg" id="err-email">Please enter your email address.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">2. What is your role? <span class="req">*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="role" value="FLSM" /> FLSM (First-Line Sales Manager)</label>
+        <label><input type="radio" name="role" value="SLSM" /> SLSM (Second-Line Sales Manager)</label>
+        <label><input type="radio" name="role" value="RevOps BP" /> RevOps Business Partner</label>
+        <label><input type="radio" name="role" value="Other" /> Other</label>
+      </div>
+      <div class="error-msg" id="err-role">Please select your role.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">3. Which Market Unit / LoB are you covering? <span class="req">*</span><br>
+        <span class="q-hint">(For LoB FLSMs, specify LoB and MU — e.g. GC HCM)</span>
+      </label>
+      <input type="text" name="market_unit" placeholder="e.g. Greater China, Japan HCM, ANZ..." required />
+      <div class="error-msg" id="err-market_unit">Please fill in your Market Unit / LoB.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">4. Are you attending FLSM Mission Control — the regular 1:1 meeting with your Revenue Operations Business Partner? <span class="req">*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="attending" value="Yes" onchange="toggleConditional()" /> Yes</label>
+        <label><input type="radio" name="attending" value="No" onchange="toggleConditional()" /> No</label>
+      </div>
+      <div class="error-msg" id="err-attending">Please select an option.</div>
+    </div>
+
+    <div class="card hidden" id="q-reason">
+      <label class="q-label">5. If "No", why?</label>
+      <textarea name="reason_not_attending" placeholder="Please explain..."></textarea>
+    </div>
+
+    <div class="card">
+      <label class="q-label">6. The insights provided by your Rev Ops BP are clear, sufficient, and valuable? <span class="req">*</span></label>
+      <div class="scale-row">
+        <label><input type="radio" name="insights_quality" value="Strongly Disagree" /><span class="scale-btn">Strongly Disagree</span></label>
+        <label><input type="radio" name="insights_quality" value="Disagree" /><span class="scale-btn">Disagree</span></label>
+        <label><input type="radio" name="insights_quality" value="Agree" /><span class="scale-btn">Agree</span></label>
+        <label><input type="radio" name="insights_quality" value="Strongly Agree" /><span class="scale-btn">Strongly Agree</span></label>
+      </div>
+      <div class="error-msg" id="err-insights_quality">Please select an option.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">7. Which topic is most valuable for you? <span class="req">*</span> <span class="q-hint">(Select all that apply)</span></label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="valuable_topic" value="Quota Attainment Review" /> Quota Attainment Review</label>
+        <label><input type="checkbox" name="valuable_topic" value="Pipeline Analysis" /> Pipeline Analysis</label>
+        <label><input type="checkbox" name="valuable_topic" value="Rep Performance Trends" /> Rep Performance Trends</label>
+        <label><input type="checkbox" name="valuable_topic" value="Forecast Accuracy" /> Forecast Accuracy</label>
+        <label><input type="checkbox" name="valuable_topic" value="Risk & Opportunity Identification" /> Risk &amp; Opportunity Identification</label>
+        <label><input type="checkbox" name="valuable_topic" value="Action Planning & Follow-up" /> Action Planning &amp; Follow-up</label>
+        <label><input type="checkbox" name="valuable_topic" value="Other" /> Other</label>
+      </div>
+      <div class="error-msg" id="err-valuable_topic">Please select at least one topic.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">8. Is there any KPI missing that is relevant for you?</label>
+      <textarea name="missing_kpi" placeholder="Describe any KPIs you would like to see included..."></textarea>
+    </div>
+
+    <div class="card">
+      <label class="q-label">9. Do you follow up on actions? <span class="req">*</span></label>
+      <div class="scale-row">
+        <label><input type="radio" name="follow_up_actions" value="Strongly Disagree" /><span class="scale-btn">Strongly Disagree</span></label>
+        <label><input type="radio" name="follow_up_actions" value="Disagree" /><span class="scale-btn">Disagree</span></label>
+        <label><input type="radio" name="follow_up_actions" value="Agree" /><span class="scale-btn">Agree</span></label>
+        <label><input type="radio" name="follow_up_actions" value="Strongly Agree" /><span class="scale-btn">Strongly Agree</span></label>
+      </div>
+      <div class="error-msg" id="err-follow_up_actions">Please select an option.</div>
+    </div>
+
+    <div class="card">
+      <label class="q-label">10. What are the benefits of this practice?</label>
+      <textarea name="benefits" placeholder="Share the key benefits you have experienced..."></textarea>
+    </div>
+
+    <div class="card">
+      <label class="q-label">11. Do you have any comments or suggestions for improvement?<br>
+        <span class="q-hint">(Particularly where you answered Disagree or Strongly Disagree)</span>
+      </label>
+      <textarea name="comments" placeholder="Your comments and suggestions..."></textarea>
+    </div>
+
+    <div class="card">
+      <label class="q-label">12. How would you rate this program? <span class="req">*</span> <span class="q-hint">(1 = Very Poor, 10 = Excellent)</span></label>
+      <div class="rating-row" id="rating-row"></div>
+      <div class="error-msg" id="err-rating">Please select a rating.</div>
+    </div>
+
+    <div class="card">
+      <button type="submit" class="submit-btn" id="submit-btn">Submit Survey</button>
+    </div>
+
+  </form>
+
+  <div class="card hidden" id="success-screen">
+    <div class="success-card">
+      <div class="icon">✅</div>
+      <h2>Thank you for your feedback!</h2>
+      <p>Your response has been recorded. The program team will review all submissions.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const GH_TOKEN = '__SURVEY_TOKEN__';
+  const GH_REPO  = 'huiyan-2941/Mission-Control-Survey';
+
+  // Build rating buttons
+  const rr = document.getElementById('rating-row');
+  for (let i = 1; i <= 10; i++) {
+    rr.innerHTML += `<label><input type="radio" name="rating" value="${i}"><div class="rating-btn">${i}</div></label>`;
+  }
+
+  // Progress bar
+  document.getElementById('survey-form').addEventListener('change', () => {
+    const total = 9, checked = document.querySelectorAll('input:checked').length;
+    document.getElementById('progress-fill').style.width = Math.min(100, Math.round(checked / total * 100)) + '%';
+  });
+
+  function toggleConditional() {
+    const val = document.querySelector('input[name="attending"]:checked')?.value;
+    document.getElementById('q-reason').classList.toggle('hidden', val !== 'No');
+  }
+
+  function err(id, show) {
+    const el = document.getElementById('err-' + id);
+    if (el) el.style.display = show ? 'block' : 'none';
+  }
+
+  function validate() {
+    let ok = true;
+    const checks = [
+      ['email',           () => document.querySelector('input[name="email"]').value.trim()],
+      ['role',            () => document.querySelector('input[name="role"]:checked')],
+      ['market_unit',     () => document.querySelector('input[name="market_unit"]').value.trim()],
+      ['attending',       () => document.querySelector('input[name="attending"]:checked')],
+      ['insights_quality',() => document.querySelector('input[name="insights_quality"]:checked')],
+      ['valuable_topic',  () => document.querySelectorAll('input[name="valuable_topic"]:checked').length],
+      ['follow_up_actions',()=> document.querySelector('input[name="follow_up_actions"]:checked')],
+      ['rating',          () => document.querySelector('input[name="rating"]:checked')],
+    ];
+    checks.forEach(([id, fn]) => { const v = fn(); err(id, !v); if (!v) ok = false; });
+    return ok;
+  }
+
+  function collectData() {
+    const topics = [...document.querySelectorAll('input[name="valuable_topic"]:checked')].map(e => e.value).join('; ');
+    return {
+      timestamp: new Date().toISOString(),
+      email: document.querySelector('input[name="email"]').value.trim(),
+      role: document.querySelector('input[name="role"]:checked')?.value || '',
+      market_unit: document.querySelector('input[name="market_unit"]').value.trim(),
+      attending: document.querySelector('input[name="attending"]:checked')?.value || '',
+      reason_not_attending: document.querySelector('textarea[name="reason_not_attending"]').value.trim(),
+      insights_quality: document.querySelector('input[name="insights_quality"]:checked')?.value || '',
+      valuable_topics: topics,
+      missing_kpi: document.querySelector('textarea[name="missing_kpi"]').value.trim(),
+      follow_up_actions: document.querySelector('input[name="follow_up_actions"]:checked')?.value || '',
+      benefits: document.querySelector('textarea[name="benefits"]').value.trim(),
+      comments: document.querySelector('textarea[name="comments"]').value.trim(),
+      rating: document.querySelector('input[name="rating"]:checked')?.value || '',
+    };
+  }
+
+  async function submitToGitHub(data) {
+    const lines = [
+      `| Field | Response |`,
+      `|-------|----------|`,
+      `| **Submitted** | ${new Date(data.timestamp).toLocaleString('en-GB')} |`,
+      `| **Email** | ${data.email} |`,
+      `| **Role** | ${data.role} |`,
+      `| **Market Unit / LoB** | ${data.market_unit} |`,
+      `| **Attending Mission Control** | ${data.attending} |`,
+      data.reason_not_attending ? `| **If No, Why** | ${data.reason_not_attending} |` : '',
+      `| **Insights Quality** | ${data.insights_quality} |`,
+      `| **Valuable Topics** | ${data.valuable_topics} |`,
+      data.missing_kpi ? `| **Missing KPI** | ${data.missing_kpi} |` : '',
+      `| **Follow Up Actions** | ${data.follow_up_actions} |`,
+      data.benefits ? `| **Benefits** | ${data.benefits} |` : '',
+      data.comments ? `| **Comments** | ${data.comments} |` : '',
+      `| **Rating** | ${data.rating} / 10 |`,
+    ].filter(Boolean).join('\n');
+
+    const body = `${lines}\n\n<details><summary>Raw JSON</summary>\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\`\n</details>`;
+
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues`, {
+      method: 'POST',
+      headers: { 'Authorization': `token ${GH_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: `[Survey] ${data.email} · ${data.market_unit} · ${new Date(data.timestamp).toLocaleDateString('en-GB')}`,
+        body,
+        labels: ['survey-response'],
+      }),
+    });
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.message || res.status);
+    }
+  }
+
+  document.getElementById('survey-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) {
+      document.querySelector('.error-msg[style*="block"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = 'Submitting...';
+    btn.disabled = true;
+    try {
+      await submitToGitHub(collectData());
+      document.getElementById('survey-form').classList.add('hidden');
+      document.getElementById('success-screen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      btn.textContent = 'Submit Survey';
+      btn.disabled = false;
+      alert('Submission failed: ' + err.message);
+    }
+  });
+</script>
+</body>
+</html>
