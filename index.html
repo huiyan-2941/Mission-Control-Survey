@@ -158,8 +158,9 @@
         <label><input type="checkbox" name="valuable_topic" value="Forecast Accuracy" /> Forecast Accuracy</label>
         <label><input type="checkbox" name="valuable_topic" value="Risk & Opportunity Identification" /> Risk &amp; Opportunity Identification</label>
         <label><input type="checkbox" name="valuable_topic" value="Action Planning & Follow-up" /> Action Planning &amp; Follow-up</label>
-        <label><input type="checkbox" name="valuable_topic" value="Other" /> Other</label>
+        <label><input type="checkbox" name="valuable_topic" value="Other" onchange="toggleOtherTopic(this)" /> Other</label>
       </div>
+      <input type="text" id="other-topic-input" name="other_topic" placeholder="Please specify..." style="margin-top:8px;display:none;" />
       <div class="error-msg" id="err-valuable_topic">Please select at least one topic.</div>
     </div>
 
@@ -233,6 +234,11 @@
     document.getElementById('q-reason').classList.toggle('hidden', val !== 'No');
   }
 
+  function toggleOtherTopic(cb) {
+    document.getElementById('other-topic-input').style.display = cb.checked ? 'block' : 'none';
+    if (!cb.checked) document.getElementById('other-topic-input').value = '';
+  }
+
   function err(id, show) {
     const el = document.getElementById('err-' + id);
     if (el) el.style.display = show ? 'block' : 'none';
@@ -255,7 +261,9 @@
   }
 
   function collectData() {
-    const topics = [...document.querySelectorAll('input[name="valuable_topic"]:checked')].map(e => e.value).join('; ');
+    const otherText = document.getElementById('other-topic-input').value.trim();
+    const topics = [...document.querySelectorAll('input[name="valuable_topic"]:checked')]
+      .map(e => e.value === 'Other' && otherText ? `Other: ${otherText}` : e.value).join('; ');
     return {
       timestamp: new Date().toISOString(),
       email: document.querySelector('input[name="email"]').value.trim(),
